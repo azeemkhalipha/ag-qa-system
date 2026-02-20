@@ -101,7 +101,7 @@ Then open `http://localhost:8501` in your browser!
 
 ### Option 3: Google Colab (No installation needed)
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/yourusername/rag-qa-system/blob/main/RAG_Capstone_Colab.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/azeemkhalipha/rag-qa-system/blob/main/RAG_Capstone_Colab.ipynb)
 
 ---
 
@@ -351,7 +351,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 ```bash
 # Clone and setup
-git clone https://github.com/yourusername/rag-qa-system.git
+git clone https://github.com/azeemkhalipha/rag-qa-system.git
 cd rag-qa-system
 
 # Create virtual environment
