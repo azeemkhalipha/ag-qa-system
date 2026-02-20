@@ -4,8 +4,8 @@ RAG Question Answering System - Web Interface (Theme-Adaptive)
 Interactive web application for querying AI research papers using RAG.
 Now with automatic dark/light theme adaptation!
 
-Author: [Your Name]
-GitHub: [Your GitHub URL]
+Author: Azeem Khalipha
+GitHub: https://github.com/azeemkhalipha
 """
 
 import streamlit as st
