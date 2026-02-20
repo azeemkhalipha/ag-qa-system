@@ -1,11 +1,11 @@
 """
-RAG Question Answering System - Web Interface
-==============================================
+RAG Question Answering System - Web Interface (Theme-Adaptive)
+===============================================================
 Interactive web application for querying AI research papers using RAG.
+Now with automatic dark/light theme adaptation!
 
-Author: Azeem Khalipha
-GitHub: https://github.com/azeemkhalipha
-LinkedIn: https://www.linkedin.com/in/azeemkhalipha/
+Author: [Your Name]
+GitHub: [Your GitHub URL]
 """
 
 import streamlit as st
@@ -26,51 +26,84 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
+# FIXED: Theme-adaptive CSS that works in both light and dark modes
 st.markdown("""
 <style>
+    /* Main header - uses Streamlit's default text color */
     .main-header {
         font-size: 2.5rem;
-        color: #1E88E5;
+        font-weight: bold;
         text-align: center;
         margin-bottom: 1rem;
     }
+    
     .sub-header {
         font-size: 1.2rem;
-        color: #666;
         text-align: center;
         margin-bottom: 2rem;
+        opacity: 0.8;
     }
+    
+    /* Chunk display boxes - adapts to theme */
     .chunk-box {
-        background-color: #f0f2f6;
+        background-color: var(--secondary-background-color);
         padding: 1rem;
         border-radius: 0.5rem;
         margin: 0.5rem 0;
+        border: 1px solid var(--background-color);
     }
+    
+    /* Answer box - uses theme colors */
     .answer-box {
-        background-color: #e3f2fd;
         padding: 1.5rem;
         border-radius: 0.5rem;
         border-left: 4px solid #1E88E5;
+        background-color: var(--secondary-background-color);
+        margin: 1rem 0;
     }
+    
+    /* Source citations - adapts to theme */
     .source-box {
-        background-color: #fff3e0;
         padding: 0.5rem;
         border-radius: 0.3rem;
         margin: 0.3rem 0;
+        background-color: var(--secondary-background-color);
+        border-left: 3px solid #FF9800;
     }
+    
+    /* Metric cards - theme adaptive */
     .metric-card {
-        background-color: white;
         padding: 1rem;
         border-radius: 0.5rem;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background-color: var(--secondary-background-color);
+        margin: 0.5rem 0;
+    }
+    
+    /* Feature highlights - theme colors */
+    .feature-highlight {
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        background-color: var(--secondary-background-color);
+        text-align: center;
+        height: 100%;
+    }
+    
+    /* Progress indicator */
+    .stProgress > div > div > div > div {
+        background-color: #1E88E5;
+    }
+    
+    /* Remove extra padding */
+    .block-container {
+        padding-top: 2rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
 
 # ============================================================================
-# RAG SYSTEM COMPONENTS
+# RAG SYSTEM COMPONENTS (Same as before)
 # ============================================================================
 
 class DocumentLoader:
@@ -258,7 +291,7 @@ ANSWER:"""
 
 
 # ============================================================================
-# STREAMLIT APP
+# STREAMLIT APP (Updated with better theme handling)
 # ============================================================================
 
 def initialize_session_state():
@@ -282,26 +315,44 @@ def main():
     
     initialize_session_state()
     
-    # Header
-    st.markdown('<h1 class="main-header">🤖 RAG Question Answering System</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-header">Ask questions about AI research papers with intelligent retrieval and grounded answers</p>', unsafe_allow_html=True)
+    # Header - using div for theme adaptation
+    st.markdown('<div class="main-header">🤖 RAG Question Answering System</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">Ask questions about AI research papers with intelligent retrieval and grounded answers</div>', unsafe_allow_html=True)
     
     # Sidebar
     with st.sidebar:
         st.header("⚙️ Configuration")
         
-        # API Key input
+        # API Key Setup with better visibility
+        with st.expander("🔑 Get Your Free API Key", expanded=False):
+            st.markdown("""
+            **Quick Setup (30 seconds):**
+            
+            1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+            2. Click "Create API Key"
+            3. Click "Create API key in new project"
+            4. Copy and paste below
+            
+            💡 **Free tier:** Generous limits for testing!
+            """)
+        
         api_key = st.text_input(
             "Google AI API Key",
             type="password",
-            help="Get your API key from https://aistudio.google.com/app/apikey"
+            help="Your key is only used in this session and never stored",
+            placeholder="Paste your API key here..."
         )
         
         if api_key:
-            st.success("✅ API Key configured")
-            client = genai.Client(api_key=api_key)
+            try:
+                client = genai.Client(api_key=api_key)
+                st.success("✅ API Key Valid")
+            except Exception as e:
+                st.error(f"❌ Invalid API Key: {str(e)[:50]}")
+                st.stop()
         else:
-            st.warning("⚠️ Please enter your API key to continue")
+            st.warning("👆 Please enter your API key to continue")
+            st.info("Don't have one? Click the dropdown above for instructions!")
             st.stop()
         
         st.divider()
@@ -316,7 +367,7 @@ def main():
         )
         
         # Process documents button
-        if uploaded_files and st.button("🚀 Process Documents", type="primary"):
+        if uploaded_files and st.button("🚀 Process Documents", type="primary", use_container_width=True):
             process_documents(uploaded_files, client)
         
         st.divider()
@@ -324,24 +375,27 @@ def main():
         # System stats
         if st.session_state.documents_loaded:
             st.header("📊 System Stats")
-            st.metric("Documents Loaded", len(uploaded_files))
-            st.metric("Total Chunks", len(st.session_state.all_chunks))
-            st.metric("Embeddings Generated", len(st.session_state.all_chunks))
-            st.metric("Questions Asked", len(st.session_state.qa_history))
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Documents", len(uploaded_files))
+                st.metric("Chunks", len(st.session_state.all_chunks))
+            with col2:
+                st.metric("Embeddings", len(st.session_state.all_chunks))
+                st.metric("Questions", len(st.session_state.qa_history))
         
         st.divider()
         
         # About section
         st.header("ℹ️ About")
         st.markdown("""
-        This system uses **Retrieval-Augmented Generation (RAG)** to answer questions about research papers.
+        **RAG System** for research papers
         
         **How it works:**
-        1. 📥 Upload research papers
+        1. 📥 Upload PDFs
         2. ✂️ Split into chunks
         3. 🧠 Generate embeddings
         4. 🔍 Semantic search
-        5. 💬 LLM generates answer
+        5. 💬 LLM answers
         
         **Models:**
         - Embeddings: `gemini-embedding-001`
@@ -350,38 +404,34 @@ def main():
         
         # Footer
         st.divider()
-        st.markdown("""
-        <div style='text-align: center; color: #666; font-size: 0.9rem;'>
-        Built with Streamlit & Google Gemini<br>
-        <a href='[Your GitHub]'>GitHub</a> | 
-        <a href='[Your LinkedIn]'>LinkedIn</a>
-        </div>
-        """, unsafe_allow_html=True)
+        st.caption("Built with Streamlit & Google Gemini")
     
     # Main content area
     if not st.session_state.documents_loaded:
-        # Welcome screen
-        st.info("👈 Upload research papers in the sidebar to get started!")
+        # Welcome screen with theme-adaptive cards
+        st.info("👈 Upload research papers in the sidebar to get started!", icon="📚")
         
-        # Example questions
-        st.subheader("📝 Example Questions You Can Ask:")
-        example_questions = [
+        st.subheader("📝 Example Questions:")
+        examples = [
             "What are the key components of the Transformer architecture?",
             "How does multi-head attention work?",
             "What is the purpose of positional encoding?",
-            "Explain the concept of few-shot learning in GPT-3",
+            "Explain few-shot learning in GPT-3",
             "What are the main components of a RAG model?"
         ]
         
-        for i, q in enumerate(example_questions, 1):
-            st.markdown(f"{i}. *{q}*")
+        for i, q in enumerate(examples, 1):
+            st.markdown(f"**{i}.** *{q}*")
         
-        # Features showcase
+        st.divider()
+        
+        # Features showcase - using columns for better spacing
+        st.subheader("✨ Features")
         col1, col2, col3 = st.columns(3)
         
         with col1:
             st.markdown("""
-            <div class="metric-card">
+            <div class="feature-highlight">
             <h3>🎯 Accurate</h3>
             <p>Grounded answers with source citations</p>
             </div>
@@ -389,7 +439,7 @@ def main():
         
         with col2:
             st.markdown("""
-            <div class="metric-card">
+            <div class="feature-highlight">
             <h3>⚡ Fast</h3>
             <p>Semantic search in milliseconds</p>
             </div>
@@ -397,7 +447,7 @@ def main():
         
         with col3:
             st.markdown("""
-            <div class="metric-card">
+            <div class="feature-highlight">
             <h3>🔗 Transparent</h3>
             <p>Full source attribution</p>
             </div>
@@ -416,9 +466,9 @@ def main():
         
         col1, col2 = st.columns([1, 5])
         with col1:
-            ask_button = st.button("🔍 Ask", type="primary")
+            ask_button = st.button("🔍 Ask", type="primary", use_container_width=True)
         with col2:
-            if st.button("🗑️ Clear History"):
+            if st.button("🗑️ Clear History", use_container_width=True):
                 st.session_state.qa_history = []
                 st.rerun()
         
@@ -431,14 +481,12 @@ def main():
             st.subheader("📜 Question History")
             
             for i, qa in enumerate(reversed(st.session_state.qa_history), 1):
-                with st.expander(f"Q{len(st.session_state.qa_history) - i + 1}: {qa['question']}", expanded=(i==1)):
-                    # Answer
-                    st.markdown('<div class="answer-box">', unsafe_allow_html=True)
-                    st.markdown(f"**Answer:**\n\n{qa['answer']}")
-                    st.markdown('</div>', unsafe_allow_html=True)
+                with st.expander(f"**Q{len(st.session_state.qa_history) - i + 1}:** {qa['question']}", expanded=(i==1)):
+                    # Answer - using theme-adaptive box
+                    st.markdown(f'<div class="answer-box"><strong>Answer:</strong><br><br>{qa["answer"]}</div>', unsafe_allow_html=True)
                     
                     # Sources
-                    st.markdown("**Sources:**")
+                    st.markdown("**📚 Sources:**")
                     for source in qa['sources']:
                         st.markdown(f'<div class="source-box">📄 {source}</div>', unsafe_allow_html=True)
                     
@@ -458,41 +506,38 @@ def process_documents(uploaded_files, client):
     """Process uploaded documents"""
     
     with st.spinner("Processing documents... This may take a few minutes."):
-        progress_bar = st.progress(0)
-        status_text = st.empty()
+        progress_bar = st.progress(0, text="Starting...")
         
         # Step 1: Load documents
-        status_text.text("📥 Loading documents...")
+        progress_bar.progress(0.1, text="📥 Loading documents...")
         documents = {}
         for i, file in enumerate(uploaded_files):
             doc_name = file.name.replace('.pdf', '')
             text = DocumentLoader.load_pdf(file)
             documents[doc_name] = text
-            progress_bar.progress((i + 1) / (len(uploaded_files) * 3))
+            progress_bar.progress(0.1 + (i + 1) * 0.1 / len(uploaded_files), text=f"Loaded {i+1}/{len(uploaded_files)} documents")
         
         # Step 2: Chunk documents
-        status_text.text("✂️ Chunking documents...")
+        progress_bar.progress(0.2, text="✂️ Chunking documents...")
         chunker = TextChunker()
         all_chunks = []
         for i, (doc_name, text) in enumerate(documents.items()):
             chunks = chunker.chunk_text(text, doc_name)
             all_chunks.extend(chunks)
-            progress_bar.progress((len(uploaded_files) + i + 1) / (len(uploaded_files) * 3))
+            progress_bar.progress(0.2 + (i + 1) * 0.1 / len(documents), text=f"Chunked {i+1}/{len(documents)} documents")
         
         # Step 3: Generate embeddings
-        status_text.text(f"🧠 Generating embeddings for {len(all_chunks)} chunks... (This takes ~{len(all_chunks) * 0.65 / 60:.1f} minutes)")
+        progress_bar.progress(0.3, text=f"🧠 Generating embeddings for {len(all_chunks)} chunks... (~{len(all_chunks) * 0.65 / 60:.1f} minutes)")
         embedding_gen = EmbeddingGenerator(client)
         
         chunk_texts = [chunk['text'] for chunk in all_chunks]
         
-        # Create sub-progress for embeddings
-        embedding_progress = st.progress(0)
+        embedding_progress = st.progress(0, text="Generating embeddings...")
         embeddings = embedding_gen.batch_generate(chunk_texts, embedding_progress)
         
-        progress_bar.progress(1.0)
+        progress_bar.progress(0.9, text="🔗 Building vector index...")
         
         # Step 4: Build vector store
-        status_text.text("🔗 Building vector index...")
         vector_store = VectorStore()
         vector_store.add_chunks(all_chunks, embeddings)
         
@@ -506,12 +551,12 @@ def process_documents(uploaded_files, client):
         st.session_state.answer_gen = answer_gen
         st.session_state.all_chunks = all_chunks
         
-        status_text.text("")
-        progress_bar.empty()
+        progress_bar.progress(1.0, text="✅ Complete!")
         embedding_progress.empty()
         
         st.success(f"✅ Successfully processed {len(documents)} documents with {len(all_chunks)} chunks!")
         time.sleep(1)
+        progress_bar.empty()
         st.rerun()
 
 
